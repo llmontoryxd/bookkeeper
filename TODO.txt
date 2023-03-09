@@ -1,0 +1,35 @@
+- set mimimum size of windows
+- add colors to budget and all other windows
+- add exit button
+- change add window in expense and others tabs to QDialog
++ change parent to name
+- change table dims to db dims
+- change order in category tab
+- change size columns in cat_table
++ change QLineEdit to QComboBox in AddParent class in category tab
++ change update button in category tab
++ connect delete with db in category tab
++ add warning about deleting item to category tab
+- add exit from adding and updating item in category tab
+- add deleting expenses if delete category (change delete_cat function in Bookkepeer class)
+- add changing pk when deleting item
+- add error handlers to tabs
+- change update button in expense tab
++ connect add with db in expense tab
++ connect delete with db in expense tab
++ connect update with db in expense tab
+- add exit from additing and updating item in expense tab
+- refactor classes on tabs (addsum, addcategory etc)
+- add comment that added_date in expense table adding auto
+- add keybinds
+- add icons
+- add color
+- add order in expense tab
++ change placeholders to items
+- change tests from MemoryRepo to SQLiteRepo in test_models
+- add tests to Budget class
+- change size columns in budget table
+- add placeholders to add button
++ add update button in budget tab
+- add rounding for amount in budget tab
+- add tests to interface

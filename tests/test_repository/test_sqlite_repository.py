@@ -1,11 +1,8 @@
 import pytest
 from bookkeeper.repository.sqlite_repository import SQLiteRepository
 from dataclasses import dataclass
-from datetime import datetime
-import os
 
-os.chdir('../')
-DB_FILE = os.path.join(os.getcwd(), 'test_databases', 'test.db')
+DB_FILE = 'test.db'
 
 
 @pytest.fixture

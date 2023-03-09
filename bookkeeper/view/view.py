@@ -9,7 +9,7 @@ from bookkeeper.view.budget_tab import BudgetTab
 figures_path = os.path.join(os.getcwd(), 'figures')
 
 
-class View(QtWidgets.QWidget):
+class View(QtWidgets.QWidget): # pylint: disable=too-few-public-methods
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle('Bookkeeper App')
@@ -31,8 +31,8 @@ class View(QtWidgets.QWidget):
         self.layout.addWidget(self.tabs)
 
 
-app = QtWidgets.QApplication(sys.argv)
-window = View()
-window.resize(600, 900)
-window.show()
-app.exec()
+#app = QtWidgets.QApplication(sys.argv)
+#window = View()
+#window.resize(600, 900)
+#window.show()
+#app.exec()
