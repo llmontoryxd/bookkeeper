@@ -35,6 +35,7 @@ class BudgetTable(QtWidgets.QWidget):
             0, QtWidgets.QHeaderView.ResizeToContents)
         self.header.setSectionResizeMode(
             1, QtWidgets.QHeaderView.Stretch)
+        self.budget_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.budget_table)
@@ -62,7 +63,8 @@ class BudgetTable(QtWidgets.QWidget):
         self.budget_table.setItem(2, 0, QtWidgets.QTableWidgetItem(str(month_amount)))
 
         for i in range(len(budget_data)):
-            self.budget_table.setItem(i, 1, QtWidgets.QTableWidgetItem(str(budget_data[i].budget)))
+            self.budget_table.setItem(i, 1,
+                                      QtWidgets.QTableWidgetItem(str(budget_data[i].budget)))
 
     def contextMenuEvent(self, event):
         context = QtWidgets.QMenu(self)
@@ -74,7 +76,8 @@ class BudgetTable(QtWidgets.QWidget):
             self._update_budget()
 
     def _update_budget(self):
-        amounts = [self.budget_table.item(0, 0).text(), self.budget_table.item(1, 0).text(),
+        amounts = [self.budget_table.item(0, 0).text(),
+                   self.budget_table.item(1, 0).text(),
                    self.budget_table.item(2, 0).text()]
         self.update_menu = UpdateMenu(amounts)
         self.update_menu.submitClicked.connect(self._on_update_menu_submit)

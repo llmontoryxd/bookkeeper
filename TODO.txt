@@ -33,3 +33,6 @@
 + add update button in budget tab
 - add rounding for amount in budget tab
 - add tests to interface
+- set window block when subwindow is open
+- refactor sqlite repo
+- add placeholder to expense_date

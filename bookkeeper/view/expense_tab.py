@@ -41,6 +41,7 @@ class ExpenseTable(QtWidgets.QWidget):
             3, QtWidgets.QHeaderView.Stretch)
         self.v_header = self.expenses_table.verticalHeader()
         self.v_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.expenses_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.expenses_table.verticalHeader().hide()
 
         self.layout.addWidget(self.title)

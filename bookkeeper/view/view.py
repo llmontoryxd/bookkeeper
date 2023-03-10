@@ -30,9 +30,3 @@ class View(QtWidgets.QWidget): # pylint: disable=too-few-public-methods
 
         self.layout.addWidget(self.tabs)
 
-
-#app = QtWidgets.QApplication(sys.argv)
-#window = View()
-#window.resize(600, 900)
-#window.show()
-#app.exec()

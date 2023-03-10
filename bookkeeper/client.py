@@ -1,10 +1,9 @@
 from bookkeeper.view.view import View
 from bookkeeper.repository.sqlite_repository import SQLiteRepository
-from PySide6 import QtWidgets, QtGui
+from PySide6 import QtWidgets
 from bookkeeper.models.expense import Expense
 from bookkeeper.models.category import Category
 from bookkeeper.models.budget import Budget
-from bookkeeper.utils import read_tree
 import os
 import sys
 
@@ -12,6 +11,7 @@ import sys
 class Bookkeeper:
     def __init__(self):
         self.view = View()
+        self.view.resize(600, 900)
         self.db_path = os.path.join(os.getcwd(), 'databases', 'bookkeeper.db')
         self.cat_repo = SQLiteRepository(self.db_path, Category)
         self.cats = self.cat_repo.get_all()
@@ -81,7 +81,8 @@ class Bookkeeper:
         self.view.budget_tab.budget_table.set_data(self.budget_data)
 
     def update_expense(self, pk, new_date, new_summ, new_cat, new_com):
-        new_expense = Expense(pk=pk, expense_date=new_date, amount=new_summ, category=new_cat, comment=new_com)
+        new_expense = Expense(pk=pk, expense_date=new_date,
+                              amount=new_summ, category=new_cat, comment=new_com)
         self.exp_repo.update(new_expense)
         for expense in self.expenses:
             if expense.pk == new_expense.pk:
@@ -103,10 +104,4 @@ class Bookkeeper:
         self.budget_data[1].budget = week_budget
         self.budget_data[2].budget = month_budget
         self.view.budget_tab.budget_table.set_data(self.budget_data)
-
-
-app = QtWidgets.QApplication(sys.argv)
-B = Bookkeeper()
-B.view.resize(600, 900)
-B.view.show()
-app.exec()
+        

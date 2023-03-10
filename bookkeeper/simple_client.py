@@ -4,7 +4,6 @@
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense import Expense
-from bookkeeper.repository.memory_repository import MemoryRepository
 from bookkeeper.repository.sqlite_repository import SQLiteRepository
 from bookkeeper.utils import read_tree
 import os
