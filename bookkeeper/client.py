@@ -56,7 +56,12 @@ class Bookkeeper:
 
         self.view.category_tab.cat_table.set_data(self.cats)
         self.view.expense_tab.expense_table.set_data(self.expenses)
+        self.view.budget_tab.budget_table.set_expenses(self.expenses)
         self.view.budget_tab.budget_table.set_data(self.budget_data)
+        budgets = self.view.budget_tab.budget_table.get_data_from_table()
+        amounts = [budgets[0].amount, budgets[1].amount, budgets[2].amount]
+        self.update_budget(budgets[0].budget, budgets[1].budget,
+                           budgets[2].budget, amounts)
 
     def find_subs(self, category, cat_subs_list):
         cat_subs_list.append(category)
@@ -89,13 +94,23 @@ class Bookkeeper:
         self.exp_repo.add(expense)
         self.expenses.append(expense)
         self.view.expense_tab.expense_table.set_data(self.expenses)
+        self.view.budget_tab.budget_table.set_expenses(self.expenses)
         self.view.budget_tab.budget_table.set_data(self.budget_data)
+        budgets = self.view.budget_tab.budget_table.get_data_from_table()
+        amounts = [budgets[0].amount, budgets[1].amount, budgets[2].amount]
+        self.update_budget(budgets[0].budget, budgets[1].budget,
+                           budgets[2].budget, amounts)
 
     def delete_exp(self, expense):
         self.exp_repo.delete(expense.pk)
         self.expenses.remove(expense)
         self.view.expense_tab.expense_table.set_data(self.expenses)
+        self.view.budget_tab.budget_table.set_expenses(self.expenses)
         self.view.budget_tab.budget_table.set_data(self.budget_data)
+        budgets = self.view.budget_tab.budget_table.get_data_from_table()
+        amounts = [budgets[0].amount, budgets[1].amount, budgets[2].amount]
+        self.update_budget(budgets[0].budget, budgets[1].budget,
+                           budgets[2].budget, amounts)
 
     def update_expense(self, pk, new_date, new_summ, new_cat, new_com):
         new_expense = Expense(pk=pk, expense_date=new_date,
@@ -108,7 +123,12 @@ class Bookkeeper:
                 expense.category = new_expense.category
                 expense.comment = new_expense.comment
         self.view.expense_tab.expense_table.set_data(self.expenses)
+        self.view.budget_tab.budget_table.set_expenses(self.expenses)
         self.view.budget_tab.budget_table.set_data(self.budget_data)
+        budgets = self.view.budget_tab.budget_table.get_data_from_table()
+        amounts = [budgets[0].amount, budgets[1].amount, budgets[2].amount]
+        self.update_budget(budgets[0].budget, budgets[1].budget,
+                           budgets[2].budget, amounts)
 
     def update_budget(self, day_budget, week_budget, month_budget, amounts):
         day_budget_data = Budget(pk=1, budget=day_budget, amount=amounts[0])
@@ -129,3 +149,9 @@ class Bookkeeper:
         for cat in self.cats:
             self.cat_repo.delete(cat.pk)
         self.cats = []
+        for budget in self.budget_data:
+            self.budget_repo.delete(budget.pk)
+        self.budget_repo.add(Budget(amount=0, budget=1000))
+        self.budget_repo.add(Budget(amount=0, budget=7000))
+        self.budget_repo.add(Budget(amount=0, budget=30000))
+        self.view.budget_tab.budget_table.set_data(self.budget_data)

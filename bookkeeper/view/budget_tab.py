@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 from datetime import datetime
+from bookkeeper.models.budget import Budget
 
 
 class BudgetTab(QtWidgets.QWidget):
@@ -71,6 +72,16 @@ class BudgetTable(QtWidgets.QWidget):
         for i in range(len(budget_data)):
             self.budget_table.setItem(i, 1,
                                       QtWidgets.QTableWidgetItem(str(budget_data[i].budget)))
+
+    def get_data_from_table(self):
+        day_budget_data = Budget(pk=1, budget=self.budget_table.item(0, 1).text(),
+                                 amount=self.budget_table.item(0, 0).text())
+        week_budget_data = Budget(pk=1, budget=self.budget_table.item(1, 1).text(),
+                                 amount=self.budget_table.item(1, 0).text())
+        month_budget_data = Budget(pk=1, budget=self.budget_table.item(2, 1).text(),
+                                 amount=self.budget_table.item(2, 0).text())
+
+        return day_budget_data, week_budget_data, month_budget_data
 
     def _update_budget(self):
         amounts = [self.budget_table.item(0, 0).text(),
