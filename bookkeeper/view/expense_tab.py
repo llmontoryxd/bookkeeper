@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets, QtGui, QtCore
-import datetime
+from datetime import datetime
+import operator
 
 
 class ExpenseTab(QtWidgets.QWidget):
@@ -47,35 +48,30 @@ class ExpenseTable(QtWidgets.QWidget):
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.expenses_table)
 
+        self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.add_row = QtGui.QAction('Добавить расход', self)
+        self.delete_row = QtGui.QAction('Удалить расход', self)
+        self.update_row = QtGui.QAction('Изменить расход', self)
+        self.add_row.triggered.connect(self._add_row)
+        self.delete_row.triggered.connect(self._delete_row)
+        self.update_row.triggered.connect(self._update_row)
+
+        self.addAction(self.add_row)
+        self.addAction(self.delete_row)
+        self.addAction(self.update_row)
+
     def set_categories(self, categories):
         self.categories = categories
 
     def set_data(self, expenses):
-        self.expenses = expenses
-        self.expenses_table.setRowCount(len(expenses))
-        for i in range(len(expenses)):
-            date = expenses[i].expense_date.split('.')[0]
+        self.expenses = sorted(expenses, key=operator.attrgetter('expense_date'), reverse=True)
+        self.expenses_table.setRowCount(len(self.expenses))
+        for i in range(len(self.expenses)):
+            date = self.expenses[i].expense_date.split('.')[0]
             self.expenses_table.setItem(i, 0, QtWidgets.QTableWidgetItem(date))
-            self.expenses_table.setItem(i, 1, QtWidgets.QTableWidgetItem(expenses[i].amount))
-            self.expenses_table.setItem(i, 2, QtWidgets.QTableWidgetItem(expenses[i].category))
-            self.expenses_table.setItem(i, 3, QtWidgets.QTableWidgetItem(expenses[i].comment))
-
-    def contextMenuEvent(self, event):
-        context = QtWidgets.QMenu(self)
-        add_row = QtGui.QAction('Добавить расход', self)
-        delete_row = QtGui.QAction('Удалить расход', self)
-        update_row = QtGui.QAction('Изменить расход', self)
-        context.addAction(update_row)
-        context.addAction(add_row)
-        context.addAction(delete_row)
-
-        action = context.exec(event.globalPos())
-        if action == add_row:
-            self._add_row()
-        elif action == delete_row:
-            self._delete_row()
-        elif action == update_row:
-            self._update_row()
+            self.expenses_table.setItem(i, 1, QtWidgets.QTableWidgetItem(self.expenses[i].amount))
+            self.expenses_table.setItem(i, 2, QtWidgets.QTableWidgetItem(self.expenses[i].category))
+            self.expenses_table.setItem(i, 3, QtWidgets.QTableWidgetItem(self.expenses[i].comment))
 
     def _update_row(self):
         upd_obj_pk = self.expenses[self.expenses_table.currentRow()].pk
@@ -162,9 +158,13 @@ class AddMenu(QtWidgets.QWidget):
         self.setWindowTitle('Добавление расхода')
         self.setLayout(self.layout)
         self.sum_widget = AddSum()
+        self.sum_widget.sum_line.setPlaceholderText('0')
         self.cat_widget = AddCategory(self.categories)
         self.com_widget = AddComment()
+        self.com_widget.comment_line.setPlaceholderText('Введите комментарий...')
         self.date_widget = AddDate()
+        self.date_widget.date_box.setDateTime(QtCore.QDateTime.fromString(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                           'yyyy-MM-dd HH:mm:ss'))
         self.submit_button = QtWidgets.QPushButton('Добавить')
         self.submit_button.clicked.connect(self._submit)
 

@@ -1,4 +1,3 @@
-import sys
 import os
 
 from PySide6 import QtWidgets, QtGui
@@ -6,14 +5,13 @@ from bookkeeper.view.expense_tab import ExpenseTab
 from bookkeeper.view.category_tab import CategoryTab
 from bookkeeper.view.budget_tab import BudgetTab
 
-figures_path = os.path.join(os.getcwd(), 'figures')
-
 
 class View(QtWidgets.QWidget): # pylint: disable=too-few-public-methods
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.figures_path = os.path.join(os.getcwd(), 'view', 'figures')
         self.setWindowTitle('Bookkeeper App')
-        self.setWindowIcon(QtGui.QIcon(os.path.join(figures_path, 'logo.png')))
+        self.setWindowIcon(QtGui.QIcon(os.path.join(self.figures_path, 'logo.png')))
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
 

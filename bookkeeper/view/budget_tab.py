@@ -40,6 +40,12 @@ class BudgetTable(QtWidgets.QWidget):
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.budget_table)
 
+        self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.update_budget = QtGui.QAction('Обновить бюджет', self)
+        self.update_budget.triggered.connect(self._update_budget)
+
+        self.addAction(self.update_budget)
+
     def set_expenses(self, expenses):
         self.expenses = expenses
 
@@ -58,28 +64,22 @@ class BudgetTable(QtWidgets.QWidget):
                         if expense_datetime.day == now.day:
                             day_amount += float(expense.amount)
 
-        self.budget_table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(day_amount)))
-        self.budget_table.setItem(1, 0, QtWidgets.QTableWidgetItem(str(week_amount)))
-        self.budget_table.setItem(2, 0, QtWidgets.QTableWidgetItem(str(month_amount)))
+        self.budget_table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(round(day_amount, 2))))
+        self.budget_table.setItem(1, 0, QtWidgets.QTableWidgetItem(str(round(week_amount, 2))))
+        self.budget_table.setItem(2, 0, QtWidgets.QTableWidgetItem(str(round(month_amount, 2))))
 
         for i in range(len(budget_data)):
             self.budget_table.setItem(i, 1,
                                       QtWidgets.QTableWidgetItem(str(budget_data[i].budget)))
-
-    def contextMenuEvent(self, event):
-        context = QtWidgets.QMenu(self)
-        update_budget = QtGui.QAction('Обновить бюджет', self)
-        context.addAction(update_budget)
-
-        action = context.exec(event.globalPos())
-        if action == update_budget:
-            self._update_budget()
 
     def _update_budget(self):
         amounts = [self.budget_table.item(0, 0).text(),
                    self.budget_table.item(1, 0).text(),
                    self.budget_table.item(2, 0).text()]
         self.update_menu = UpdateMenu(amounts)
+        self.update_menu.day_budget.line.setText(self.budget_table.item(0, 1).text())
+        self.update_menu.week_budget.line.setText(self.budget_table.item(1, 1).text())
+        self.update_menu.month_budget.line.setText(self.budget_table.item(2, 1).text())
         self.update_menu.submitClicked.connect(self._on_update_menu_submit)
         self.update_menu.show()
 

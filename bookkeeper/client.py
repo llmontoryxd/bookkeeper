@@ -5,14 +5,14 @@ from bookkeeper.models.expense import Expense
 from bookkeeper.models.category import Category
 from bookkeeper.models.budget import Budget
 import os
-import sys
 
 
 class Bookkeeper:
-    def __init__(self):
+    def __init__(self, db_path):
         self.view = View()
         self.view.resize(600, 900)
-        self.db_path = os.path.join(os.getcwd(), 'databases', 'bookkeeper.db')
+        #self.db_path = os.path.join(os.getcwd(), 'databases', 'bookkeeper.db')
+        self.db_path = db_path
         self.cat_repo = SQLiteRepository(self.db_path, Category)
         self.cats = self.cat_repo.get_all()
         self.view.category_tab.cat_table.set_data(self.cats)
@@ -49,7 +49,14 @@ class Bookkeeper:
         for cat in cat_subs_list:
             self.cat_repo.delete(cat.pk)
             self.cats.remove(cat)
+            for expense in self.expenses:
+                if expense.category == cat.name:
+                    self.exp_repo.delete(expense.pk)
+                    self.expenses.remove(expense)
+
         self.view.category_tab.cat_table.set_data(self.cats)
+        self.view.expense_tab.expense_table.set_data(self.expenses)
+        self.view.budget_tab.budget_table.set_data(self.budget_data)
 
     def find_subs(self, category, cat_subs_list):
         cat_subs_list.append(category)
@@ -60,12 +67,22 @@ class Bookkeeper:
 
     def update_cat(self, pk, new_name, new_parent):
         new_cat = Category(pk=pk, name=new_name, parent=new_parent)
+        old_cat = self.cat_repo.get_all({'pk': pk})[0]
         self.cat_repo.update(new_cat)
         for cat in self.cats:
             if cat.pk == new_cat.pk:
                 cat.name = new_cat.name
                 cat.parent = new_cat.parent
+
+        for expense in self.expenses:
+            if expense.category == old_cat.name:
+                new_expense = Expense(pk=expense.pk, expense_date=expense.expense_date,
+                                    amount=expense.amount, category=new_name, comment=expense.comment)
+                self.exp_repo.update(new_expense)
+                expense.category = new_name
+
         self.view.category_tab.cat_table.set_data(self.cats)
+        self.view.expense_tab.expense_table.set_data(self.expenses)
 
     def add_exp(self, date, summ, cat, comment):
         expense = Expense(amount=summ, category=cat, comment=comment, expense_date=date)
@@ -104,4 +121,11 @@ class Bookkeeper:
         self.budget_data[1].budget = week_budget
         self.budget_data[2].budget = month_budget
         self.view.budget_tab.budget_table.set_data(self.budget_data)
-        
+
+    def clear_db(self):
+        for expense in self.expenses:
+            self.exp_repo.delete(expense.pk)
+        self.expenses = []
+        for cat in self.cats:
+            self.cat_repo.delete(cat.pk)
+        self.cats = []

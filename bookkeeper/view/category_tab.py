@@ -39,6 +39,18 @@ class CategoryTable(QtWidgets.QWidget):
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.cat_table)
 
+        self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.add_row = QtGui.QAction('Добавить категорию', self)
+        self.delete_row = QtGui.QAction('Удалить категорию', self)
+        self.update_row = QtGui.QAction('Изменить категорию', self)
+        self.add_row.triggered.connect(self._add_row)
+        self.delete_row.triggered.connect(self._delete_row)
+        self.update_row.triggered.connect(self._update_row)
+
+        self.addAction(self.add_row)
+        self.addAction(self.delete_row)
+        self.addAction(self.update_row)
+
     def set_data(self, categories):
         self.cat_table.setRowCount(len(categories))
         self.categories = categories
@@ -51,22 +63,22 @@ class CategoryTable(QtWidgets.QWidget):
                     if str(categories[i].parent) == str(categories[j].pk):
                         self.cat_table.setItem(i, 1, QtWidgets.QTableWidgetItem(categories[j].name))
 
-    def contextMenuEvent(self, event):
-        context = QtWidgets.QMenu(self)
-        add_row = QtGui.QAction('Добавить категорию', self)
-        delete_row = QtGui.QAction('Удалить категорию', self)
-        update_row = QtGui.QAction('Изменить категорию', self)
-        context.addAction(update_row)
-        context.addAction(add_row)
-        context.addAction(delete_row)
-
-        action = context.exec(event.globalPos())
-        if action == add_row:
-            self._add_row()
-        elif action == delete_row:
-            self._delete_row()
-        elif action == update_row:
-            self._update_row()
+    #def contextMenuEvent(self, event):
+    #    print(event.globalPos())
+    #    self.context = QtWidgets.QMenu(self)
+    #    add_row = QtGui.QAction('Добавить категорию', self)
+    #    delete_row = QtGui.QAction('Удалить категорию', self)
+    #    update_row = QtGui.QAction('Изменить категорию', self)
+    #    self.context.addAction(update_row)
+    #    self.context.addAction(add_row)
+    #    self.context.addAction(delete_row)
+    #    action = self.context.exec(event.globalPos())
+    #    if action == add_row:
+    #        self._add_row()
+    #    elif action == delete_row:
+    #        self._delete_row()
+    #    elif action == update_row:
+    #        self._update_row()
 
     def _add_row(self):
         self.add_menu = AddMenu(self.categories)
@@ -151,7 +163,9 @@ class AddMenu(QtWidgets.QWidget):
         self.setLayout(self.layout)
         self.setWindowTitle('Добавление категории')
         self.cat_widget = AddCategory()
+        self.cat_widget.cat_line.setPlaceholderText('Название категории')
         self.par_widget = AddParent(self.categories)
+        self.par_widget.par_line.setCurrentText('')
         self.submit_button = QtWidgets.QPushButton('Добавить')
         self.submit_button.clicked.connect(self._submit)
 
@@ -161,6 +175,8 @@ class AddMenu(QtWidgets.QWidget):
 
     def _submit(self):
         self.name = self.cat_widget.cat_line.text()
+        if self.name in [c.name for c in self.categories]:
+            raise ValueError(f'Категория {self.name} уже существует')
         par_cur_text = self.par_widget.par_line.currentText()
         if par_cur_text == '':
             self.parent = None

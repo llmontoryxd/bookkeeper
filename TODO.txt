@@ -11,8 +11,8 @@
 + connect delete with db in category tab
 + add warning about deleting item to category tab
 - add exit from adding and updating item in category tab
-- add deleting expenses if delete category (change delete_cat function in Bookkepeer class)
-- add changing pk when deleting item
++ add deleting expenses if delete category (change delete_cat function in Bookkepeer class)
+N add changing pk when deleting item
 - add error handlers to tabs
 - change update button in expense tab
 + connect add with db in expense tab
@@ -24,15 +24,15 @@
 - add keybinds
 - add icons
 - add color
-- add order in expense tab
++ add order in expense tab
 + change placeholders to items
 - change tests from MemoryRepo to SQLiteRepo in test_models
 - add tests to Budget class
 - change size columns in budget table
-- add placeholders to add button
++ add placeholders to add buttons
 + add update button in budget tab
-- add rounding for amount in budget tab
++ add rounding for amount in budget tab
 - add tests to interface
 - set window block when subwindow is open
 - refactor sqlite repo
-- add placeholder to expense_date
++ add placeholder to expense_date
