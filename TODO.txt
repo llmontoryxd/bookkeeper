@@ -1,7 +1,7 @@
 - set mimimum size of windows
 - add colors to budget and all other windows
-- add exit button
-- change add window in expense and others tabs to QDialog
+N add exit button
+N change add window in expense and others tabs to QDialog
 + change parent to name
 - change table dims to db dims
 - change order in category tab
@@ -10,7 +10,7 @@
 + change update button in category tab
 + connect delete with db in category tab
 + add warning about deleting item to category tab
-- add exit from adding and updating item in category tab
+N add exit from adding and updating item in category tab
 + add deleting expenses if delete category (change delete_cat function in Bookkepeer class)
 N add changing pk when deleting item
 + add error handlers to tabs
@@ -26,13 +26,13 @@ N add changing pk when deleting item
 - add color
 + add order in expense tab
 + change placeholders to items
-- change tests from MemoryRepo to SQLiteRepo in test_models
-- add tests to Budget class
+N change tests from MemoryRepo to SQLiteRepo in test_models
++ add tests to Budget class
 - change size columns in budget table
 + add placeholders to add buttons
 + add update button in budget tab
 + add rounding for amount in budget tab
 + add tests to interface
 - set window block when subwindow is open
-- refactor sqlite repo
+N refactor sqlite repo
 + add placeholder to expense_date
