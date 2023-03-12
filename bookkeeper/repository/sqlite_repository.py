@@ -13,7 +13,7 @@ class SQLiteRepository(AbstractRepository[T]):
         self.cls = cls
         self.create_table()
 
-    def _row_to_obj(self, row: tuple[Any] | None) -> Optional[T] | None:
+    def _row_to_obj(self, row: tuple[Any] | None) -> Any:
         if row is None:
             return None
         obj = self.cls(**dict(zip({'pk': int} | self.fields, row)))
@@ -44,12 +44,13 @@ class SQLiteRepository(AbstractRepository[T]):
             cur = con.cursor()
             cur.execute('PRAGMA foreign_keys = ON')
             cur.execute(f'INSERT INTO {self.table_name} ({names}) VALUES ({p})', values)
+            assert cur.lastrowid is not None
             obj.pk = cur.lastrowid
         con.close()
 
         return obj.pk
 
-    def get(self, pk: int) -> T | None:
+    def get(self, pk: int) -> Any:
         with sqlite3.connect(self.db_file) as con:
             cur = con.cursor()
             row = cur.execute(f'SELECT * FROM {self.table_name} WHERE pk={pk}').fetchone()

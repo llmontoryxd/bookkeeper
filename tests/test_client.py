@@ -1,17 +1,13 @@
 from pytestqt.qt_compat import qt_api
 import pytest
-import threading
 from datetime import datetime, timedelta
-import time
 
 from bookkeeper.client import Bookkeeper
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense import Expense
-from bookkeeper.view.view import View
-from bookkeeper.view.budget_tab import BudgetTab
-from bookkeeper.view.expense_tab import ExpenseTab
 from bookkeeper.view.expense_tab import DeleteWarning as DW
-from bookkeeper.view.category_tab import CategoryTab, AddMenu, DeleteWarning
+from bookkeeper.view.category_tab import DeleteWarning
+from freezegun import freeze_time
 
 
 @pytest.fixture
@@ -20,6 +16,17 @@ def main_client():
     client = Bookkeeper(db_path)
     client.clear_db()
     return client
+
+
+def test_initial_budget_data(qtbot):
+    db_path = 'test_initial.db'
+    client = Bookkeeper(db_path)
+    budget_data = client.budget_data
+    assert len(budget_data) == 0
+    assert len(client.budget_repo.get_all()) == 3
+    client.exp_repo.drop_table()
+    client.budget_repo.drop_table()
+    client.cat_repo.drop_table()
 
 
 def test_add_cat(qtbot, main_client):
@@ -221,7 +228,8 @@ def test_delete_exp(qtbot, main_client):
 
 def test_update_cat(qtbot, main_client):
     new_cat = Category(pk=1, name='не пирожок', parent=2)
-    cats = [Category(pk=1, name='пирожок', parent=None), Category(pk=2, name='капуста', parent=None)]
+    new_cat_wo_parent = Category(pk=2, name='не капуста', parent=None)
+    cats = [Category(pk=1, name='пирожок', parent=2), Category(pk=2, name='капуста', parent=None)]
     main_client.add_cat(cats[0].name, cats[0].parent)
     main_client.add_cat(cats[1].name, cats[1].parent)
     exp_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -259,7 +267,27 @@ def test_update_cat(qtbot, main_client):
     assert exp_table.expenses_table.item(0, 2).text() == new_cat.name
     assert exp_table.expenses_table.item(1, 2).text() == new_cat.name
 
+    item = cat_table.cat_table.item(1, 0)
+    assert item is not None
+    cat_table.cat_table.setCurrentItem(item)
 
+    cat_table.update_row.trigger()
+    with qtbot.waitExposed(cat_table.update_menu):
+        cat_table.update_menu.show()
+    assert cat_table.update_menu.isVisible()
+    cat_table.update_menu.cat_widget.cat_line.setText(new_cat_wo_parent.name)
+    cat_table.update_menu.par_widget.par_line.setCurrentText('')
+    qtbot.addWidget(cat_table.update_menu.submit_button)
+    qtbot.mouseClick(cat_table.update_menu.submit_button, qt_api.QtCore.Qt.MouseButton.LeftButton)
+    new_cat_wo_parent_in_repo = main_client.cat_repo.get_all(({'name': new_cat_wo_parent.name}))
+    assert new_cat_wo_parent_in_repo[0].name == new_cat_wo_parent.name
+    assert new_cat_wo_parent_in_repo[0].pk == new_cat_wo_parent.pk
+    assert new_cat_wo_parent_in_repo[0].parent == new_cat_wo_parent.parent
+    assert cat_table.cat_table.item(1, 0).text() == new_cat_wo_parent.name
+    assert cat_table.cat_table.item(1, 1).text() == ''
+
+
+@freeze_time('2023-03-06 12:00:00')
 def test_update_budget(qtbot, main_client):
     budgets = ['2000', '14000', '60000']
     cats = [Category(pk=1, name='пирожок', parent=None)]
@@ -300,27 +328,17 @@ def test_update_budget(qtbot, main_client):
     assert budget_table.budget_table.item(1, 1).text() == budgets[1]
     assert budget_table.budget_table.item(2, 1).text() == budgets[2]
     assert budgets_in_repo[0].amount == str(float(expenses[0].amount))
-    if expenses[0].expense_date.isocalendar().week == expenses[1].expense_date.isocalendar().week:
-        assert budgets_in_repo[1].amount == str(float(expenses[1].amount)
+    assert budgets_in_repo[1].amount == str(float(expenses[1].amount)
                                                               + float(expenses[0].amount))
-    else:
-        assert budgets_in_repo[1].amount == str(float(expenses[0].amount))
-
-    if expenses[0].expense_date.month == expenses[2].expense_date.month:
-        assert budgets_in_repo[2].amount == str(float(expenses[2].amount)
+    assert budgets_in_repo[2].amount == str(float(expenses[2].amount)
                                                               + float(expenses[0].amount)
                                                               + float(expenses[1].amount))
-    elif expenses[0].expense_date.month == expenses[1].expense_date.month:
-        assert budgets_in_repo[2].amount == str(float(expenses[0].amount)
-                                                + float(expenses[1].amount))
-    else:
-        assert budgets_in_repo[2].amount == str(float(expenses[0].amount))
-
     assert budget_table.budget_table.item(0, 0).text() == budgets_in_repo[0].amount
     assert budget_table.budget_table.item(1, 0).text() == budgets_in_repo[1].amount
     assert budget_table.budget_table.item(2, 0).text() == budgets_in_repo[2].amount
 
 
+@freeze_time('2023-03-06 12:00:00')
 def test_update_exp(qtbot, main_client):
     cats = [Category(pk=1, name='пирожок', parent=None), Category(pk=2, name='капуста', parent=None)]
     assert cats[1].pk == 2
@@ -379,23 +397,10 @@ def test_update_exp(qtbot, main_client):
 
     budgets_in_repo = main_client.budget_repo.get_all()
     assert budgets_in_repo[0].amount == '0.0'
-    if expenses[0].expense_date.isocalendar().week == expenses[1].expense_date.isocalendar().week:
-        assert budgets_in_repo[1].amount == str(float(expenses[1].amount))
-    else:
-        assert budgets_in_repo[1].amount == '0.0'
-
-    if expenses[0].expense_date.month == expenses[2].expense_date.month:
-        assert budgets_in_repo[2].amount == str(float(expenses[2].amount)
+    assert budgets_in_repo[1].amount == str(float(expenses[1].amount) + float(new_expense.amount))
+    assert budgets_in_repo[2].amount == str(float(expenses[2].amount)
                                                 + float(new_expense.amount)
                                                 + float(expenses[1].amount))
-    elif expenses[0].expense_date.month == new_expense.expense_date.month:
-        assert budgets_in_repo[2].amount == str(float(expenses[1].amount)
-                                                + float(new_expense.amount))
-    elif expenses[0].expense_date.month == expenses[1].expense_date.month:
-        assert budgets_in_repo[2].amount == str(float(expenses[1].amount))
-    else:
-        assert budgets_in_repo[2].amount == '0.0'
-
     assert budget_table.budget_table.item(0, 0).text() == budgets_in_repo[0].amount
     assert budget_table.budget_table.item(1, 0).text() == budgets_in_repo[1].amount
     assert budget_table.budget_table.item(2, 0).text() == budgets_in_repo[2].amount

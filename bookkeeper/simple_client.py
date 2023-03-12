@@ -14,8 +14,8 @@ import os
 
 DB_FILE = os.path.join(os.getcwd(), 'databases', 'simple.db')
 
-cat_repo = SQLiteRepository(DB_FILE, Category)
-exp_repo = SQLiteRepository(DB_FILE, Expense)
+cat_repo: SQLiteRepository[Category] = SQLiteRepository(DB_FILE, Category)
+exp_repo: SQLiteRepository[Expense] = SQLiteRepository(DB_FILE, Expense)
 
 cats = '''
 продукты

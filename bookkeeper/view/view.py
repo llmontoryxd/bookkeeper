@@ -7,16 +7,16 @@ from bookkeeper.view.budget_tab import BudgetTab
 
 
 class View(QtWidgets.QWidget): # pylint: disable=too-few-public-methods
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
         self.figures_path = os.path.join(os.getcwd(), 'view', 'figures')
         self.setWindowTitle('Bookkeeper App')
         self.setWindowIcon(QtGui.QIcon(os.path.join(self.figures_path, 'logo.png')))
-        self.layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout)
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
 
         self.tabs = QtWidgets.QTabWidget()
-        self.tabs.setTabPosition(QtWidgets.QTabWidget.West)
+        self.tabs.setTabPosition(QtWidgets.QTabWidget.TabPosition.West)
         self.tabs.setMovable(True)
 
         self.expense_tab = ExpenseTab()
@@ -26,5 +26,5 @@ class View(QtWidgets.QWidget): # pylint: disable=too-few-public-methods
         self.tabs.addTab(self.category_tab, 'Категории')
         self.tabs.addTab(self.budget_tab, 'Бюджет')
 
-        self.layout.addWidget(self.tabs)
+        layout.addWidget(self.tabs)
 

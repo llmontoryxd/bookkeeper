@@ -13,8 +13,8 @@
 - add exit from adding and updating item in category tab
 + add deleting expenses if delete category (change delete_cat function in Bookkepeer class)
 N add changing pk when deleting item
-- add error handlers to tabs
-- change update button in expense tab
++ add error handlers to tabs
++ change update button in expense tab
 + connect add with db in expense tab
 + connect delete with db in expense tab
 + connect update with db in expense tab

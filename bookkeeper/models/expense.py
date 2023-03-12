@@ -17,9 +17,20 @@ class Expense:
     comment - комментарий
     pk - id записи в базе данных
     """
-    amount: int
-    category: int
+    amount: int | str
+    category: int | str
     expense_date: datetime = field(default_factory=datetime.now)
     added_date: datetime = field(default_factory=datetime.now)
     comment: str = ''
     pk: int = 0
+
+
+@dataclass(slots=True)
+class ExpenseWithStringDate:
+    amount: int | str
+    category: int | str
+    expense_date: str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    added_date: str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    comment: str = ''
+    pk: int = 0
+

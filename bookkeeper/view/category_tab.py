@@ -1,25 +1,24 @@
 from PySide6 import QtWidgets, QtGui, QtCore
+from bookkeeper.models.category import Category
+from typing import Callable, Optional
 
 
 class CategoryTab(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout)
+    def __init__(self) -> None:
+        super().__init__()
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
 
         self.cat_table = CategoryTable()
-        self.layout.addWidget(self.cat_table)
+        layout.addWidget(self.cat_table)
 
 
 class CategoryTable(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.categories = None
-        self.cat_adder = None
-        self.cat_deleter = None
-        self.cat_updater = None
-        self.layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout)
+    def __init__(self) -> None:
+        super().__init__()
+        self.categories = []  # type: list[Category]
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
 
         self.title = QtWidgets.QLabel('<b>Категории</b>')
         self.cat_table = QtWidgets.QTableWidget()
@@ -30,28 +29,28 @@ class CategoryTable(QtWidgets.QWidget):
         )
         self.header = self.cat_table.horizontalHeader()
         self.header.setSectionResizeMode(
-            0, QtWidgets.QHeaderView.ResizeToContents)
+            0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         self.header.setSectionResizeMode(
-            1, QtWidgets.QHeaderView.Stretch)
-        self.cat_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+            1, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.cat_table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.cat_table.verticalHeader().hide()
 
-        self.layout.addWidget(self.title)
-        self.layout.addWidget(self.cat_table)
+        layout.addWidget(self.title)
+        layout.addWidget(self.cat_table)
 
-        self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.ActionsContextMenu)
         self.add_row = QtGui.QAction('Добавить категорию', self)
         self.delete_row = QtGui.QAction('Удалить категорию', self)
         self.update_row = QtGui.QAction('Изменить категорию', self)
-        self.add_row.triggered.connect(self._add_row)
-        self.delete_row.triggered.connect(self._delete_row)
-        self.update_row.triggered.connect(self._update_row)
+        self.add_row.triggered.connect(self._add_row)  # type: ignore[attr-defined]
+        self.delete_row.triggered.connect(self._delete_row)  # type: ignore[attr-defined]
+        self.update_row.triggered.connect(self._update_row)  # type: ignore[attr-defined]
 
         self.addAction(self.add_row)
         self.addAction(self.delete_row)
         self.addAction(self.update_row)
 
-    def set_data(self, categories):
+    def set_data(self, categories: list[Category]) -> None:
         self.cat_table.setRowCount(len(categories))
         self.categories = categories
         for i in range(len(categories)):
@@ -63,159 +62,144 @@ class CategoryTable(QtWidgets.QWidget):
                     if str(categories[i].parent) == str(categories[j].pk):
                         self.cat_table.setItem(i, 1, QtWidgets.QTableWidgetItem(categories[j].name))
 
-    #def contextMenuEvent(self, event):
-    #    print(event.globalPos())
-    #    self.context = QtWidgets.QMenu(self)
-    #    add_row = QtGui.QAction('Добавить категорию', self)
-    #    delete_row = QtGui.QAction('Удалить категорию', self)
-    #    update_row = QtGui.QAction('Изменить категорию', self)
-    #    self.context.addAction(update_row)
-    #    self.context.addAction(add_row)
-    #    self.context.addAction(delete_row)
-    #    action = self.context.exec(event.globalPos())
-    #    if action == add_row:
-    #        self._add_row()
-    #    elif action == delete_row:
-    #        self._delete_row()
-    #    elif action == update_row:
-    #        self._update_row()
-
-    def _add_row(self):
+    def _add_row(self) -> None:
         self.add_menu = AddMenu(self.categories)
         self.add_menu.submitClicked.connect(self._on_add_menu_submit)
         self.add_menu.show()
 
-    def _delete_row(self):
+    def _delete_row(self) -> None:
         self.delete_warning = DeleteWarning()
         self.delete_warning.exec()
         if self.delete_warning.clickedButton() == self.delete_warning.yes_btn:
+            assert self.categories is not None
             self.cat_deleter(self.categories[self.cat_table.currentRow()])
 
-    def _update_row(self):
+    def _update_row(self) -> None:
+        assert self.categories is not None
         upd_obj_pk = self.categories[self.cat_table.currentRow()].pk
         self.update_menu = UpdateMenu(upd_obj_pk, self.categories)
         self.update_menu.cat_widget.cat_line.setText(self.categories[self.cat_table.currentRow()].name)
-        placeholder_parent = ''
+        self.placeholder_parent = ''
         for cat in self.categories:
             if self.categories[self.cat_table.currentRow()].parent == cat.pk:
-                placeholder_parent = cat.name
+                self.placeholder_parent = cat.name
         for i in range(self.update_menu.par_widget.par_line.count()):
-            if placeholder_parent == self.update_menu.par_widget.par_line.itemText(i):
+            if self.placeholder_parent == self.update_menu.par_widget.par_line.itemText(i):
                 self.update_menu.par_widget.par_line.setCurrentIndex(i)
         self.update_menu.submitClicked.connect(self._on_update_menu_submit)
         self.update_menu.show()
 
-    def _on_add_menu_submit(self, name, parent):
+    def _on_add_menu_submit(self, name: str, parent: Optional[int]) -> None:
         self.cat_adder(name, parent)
 
-    def _on_update_menu_submit(self, pk, new_name, new_parent):
+    def _on_update_menu_submit(self, pk: int, new_name: str, new_parent: Optional[int]) -> None:
         self.cat_updater(pk, new_name, new_parent)
 
-    def register_cat_adder(self, handler):
+    def register_cat_adder(self, handler: Callable[[str,Optional[int]], None]) -> None:
         self.cat_adder = handler
 
-    def register_cat_deleter(self, handler):
+    def register_cat_deleter(self, handler: Callable[[Category], None]) -> None:
         self.cat_deleter = handler
 
-    def register_cat_updater(self, handler):
+    def register_cat_updater(self, handler: Callable[[int, str, Optional[int]], None]) -> None:
         self.cat_updater = handler
 
 
 class UpdateMenu(QtWidgets.QWidget):
     submitClicked = QtCore.Signal(int, str, object)
 
-    def __init__(self, pk, categories, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, pk: int, categories: list[Category]) -> None:
+        super().__init__()
         self.pk = pk
         self.categories = categories
-        self.layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout)
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
         self.setWindowTitle('Изменение категории')
         self.cat_widget = AddCategory()
         self.par_widget = AddParent(self.categories)
         self.submit_button = QtWidgets.QPushButton('Изменить')
-        self.submit_button.clicked.connect(self._submit)
+        self.submit_button.clicked.connect(self._submit)  # type: ignore[attr-defined]
 
-        self.layout.addWidget(self.cat_widget)
-        self.layout.addWidget(self.par_widget)
-        self.layout.addWidget(self.submit_button)
+        layout.addWidget(self.cat_widget)
+        layout.addWidget(self.par_widget)
+        layout.addWidget(self.submit_button)
 
-    def _submit(self):
+    def _submit(self) -> None:
         self.name = self.cat_widget.cat_line.text()
         par_cur_text = self.par_widget.par_line.currentText()
         if par_cur_text == '':
-            self.parent = None
+            self.parent_text = None
         else:
             for i in range(len(self.categories)):
                 if par_cur_text == self.categories[i].name:
-                    self.parent = self.categories[i].pk
-        self.submitClicked.emit(self.pk, self.name, self.parent)
+                    self.parent_text = self.categories[i].pk
+        self.submitClicked.emit(self.pk, self.name, self.parent_text)
         self.close()
 
 
 class AddMenu(QtWidgets.QWidget):
     submitClicked = QtCore.Signal(str, object)
 
-    def __init__(self, categories, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, categories: list[Category]) -> None:
+        super().__init__()
         self.categories = categories
-        self.layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout)
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
         self.setWindowTitle('Добавление категории')
         self.cat_widget = AddCategory()
         self.cat_widget.cat_line.setPlaceholderText('Название категории')
         self.par_widget = AddParent(self.categories)
         self.par_widget.par_line.setCurrentText('')
         self.submit_button = QtWidgets.QPushButton('Добавить')
-        self.submit_button.clicked.connect(self._submit)
+        self.submit_button.clicked.connect(self._submit)  # type: ignore[attr-defined]
 
-        self.layout.addWidget(self.cat_widget)
-        self.layout.addWidget(self.par_widget)
-        self.layout.addWidget(self.submit_button)
+        layout.addWidget(self.cat_widget)
+        layout.addWidget(self.par_widget)
+        layout.addWidget(self.submit_button)
 
-    def _submit(self):
+    def _submit(self) -> None:
         self.name = self.cat_widget.cat_line.text()
         if self.name in [c.name for c in self.categories]:
             raise ValueError(f'Категория {self.name} уже существует')
         par_cur_text = self.par_widget.par_line.currentText()
         if par_cur_text == '':
-            self.parent = None
+            self.parent_text = None
         else:
             for i in range(len(self.categories)):
                 if par_cur_text == self.categories[i].name:
-                    self.parent = self.categories[i].pk
-        self.submitClicked.emit(self.name, self.parent)
+                    self.parent_text = self.categories[i].pk
+        self.submitClicked.emit(self.name, self.parent_text)
         self.close()
 
 
 class AddCategory(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.layout = QtWidgets.QHBoxLayout()
-        self.setLayout(self.layout)
+    def __init__(self) -> None:
+        super().__init__()
+        layout = QtWidgets.QHBoxLayout()
+        self.setLayout(layout)
         self.cat_label = QtWidgets.QLabel('Категория')
         self.cat_line = QtWidgets.QLineEdit()
-        self.layout.addWidget(self.cat_label)
-        self.layout.addWidget(self.cat_line)
+        layout.addWidget(self.cat_label)
+        layout.addWidget(self.cat_line)
 
 
 class AddParent(QtWidgets.QWidget):
-    def __init__(self, categories, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.layout = QtWidgets.QHBoxLayout()
-        self.setLayout(self.layout)
+    def __init__(self, categories: list[Category]) -> None:
+        super().__init__()
+        layout = QtWidgets.QHBoxLayout()
+        self.setLayout(layout)
         self.par_label = QtWidgets.QLabel('Родитель')
         self.par_line = QtWidgets.QComboBox()
         for i in range(len(categories)):
             self.par_line.addItem(categories[i].name)
         self.par_line.addItem('')
-        self.layout.addWidget(self.par_label)
-        self.layout.addWidget(self.par_line)
+        layout.addWidget(self.par_label)
+        layout.addWidget(self.par_line)
 
 
 class DeleteWarning(QtWidgets.QMessageBox):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
         self.setWindowTitle('Удаление строки')
         self.setText('Вы действительно'
             +' хотите удалить строку? Все данные (подкатегории и расходы) будут удалены.')

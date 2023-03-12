@@ -12,6 +12,7 @@ python = ">=3.10, <3.12"
 pytest-cov = "^4.0.0"
 pyside6 = "^6.4.2"
 pytest-qt = "^4.2.0"
+freezegun = "^1.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

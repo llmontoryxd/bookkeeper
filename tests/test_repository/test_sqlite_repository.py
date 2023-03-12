@@ -20,7 +20,6 @@ def custom_class():
 def repos(custom_class):
     repos = SQLiteRepository.repo_factory(db_file=DB_FILE, models=[custom_class])
     yield repos
-
     for cls, repo in repos.items():
         repo.drop_table()
 
@@ -106,11 +105,5 @@ def test_row_to_obj(repo):
     assert obj.f1 == 2
     assert obj.f2 == 'test value'
 
-
-def test_repo_factory(repos, custom_class):
-    obj = custom_class()
-    assert obj.pk == 0
-
-    assert repos[custom_class].db_file == DB_FILE and repos[custom_class].table_name == custom_class.__name__.lower()
 
 

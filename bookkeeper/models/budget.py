@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from typing import Union
 
 
 @dataclass
 class Budget:
-    amount: float
-    budget: float
+    amount: float | str
+    budget: float | str
     pk: int = 0
