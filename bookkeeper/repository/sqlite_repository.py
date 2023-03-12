@@ -1,3 +1,7 @@
+"""
+Модуль, описывающий репозиторий, работающий с базой данных
+"""
+
 import sqlite3
 from inspect import get_annotations
 from typing import Any
@@ -5,6 +9,14 @@ from bookkeeper.repository.abstract_repository import AbstractRepository, T
 
 
 class SQLiteRepository(AbstractRepository[T]):
+    """
+    Описывает взаимодействие с базой данных
+
+    db_file - путь к базе данных
+    table_name - название таблицы
+    fields - поля
+    cls - класс таблицы
+    """
     def __init__(self, db_file: str, cls: type) -> None:
         self.db_file = db_file
         self.table_name = cls.__name__.lower()
@@ -14,6 +26,14 @@ class SQLiteRepository(AbstractRepository[T]):
         self.create_table()
 
     def _row_to_obj(self, row: tuple[Any] | None) -> Any:
+        """
+        Преобразовывает строку в объект
+
+        Параметры
+        ----------
+        row - строка
+
+        """
         if row is None:
             return None
         obj = self.cls(**dict(zip({'pk': int} | self.fields, row)))
@@ -21,6 +41,10 @@ class SQLiteRepository(AbstractRepository[T]):
         return obj
 
     def create_table(self) -> None:
+        """
+        Создает таблицу в базе данных
+
+        """
         with sqlite3.connect(self.db_file) as con:
             cur = con.cursor()
             cur.execute(f'CREATE TABLE IF NOT EXISTS {self.table_name}('
@@ -29,12 +53,25 @@ class SQLiteRepository(AbstractRepository[T]):
         con.close()
 
     def drop_table(self) -> None:
+        """
+        Уничтожает таблицу в базе данных
+
+        """
         with sqlite3.connect(self.db_file) as con:
             cur = con.cursor()
             cur.execute(f'DROP TABLE IF EXISTS {self.table_name}')
         con.close()
 
     def add(self, obj: T) -> int:
+        """
+        Добавляет объект в базу данных
+
+        Параметры
+        ----------
+        obj - объект для добавления
+
+
+        """
         if getattr(obj, 'pk', None) != 0:
             raise ValueError(f'trying to add object {obj} with filled ''pk'' attribute')
         names = ', '.join(self.fields.keys())
@@ -51,6 +88,15 @@ class SQLiteRepository(AbstractRepository[T]):
         return obj.pk
 
     def get(self, pk: int) -> Any:
+        """
+        Получает объект по первичному ключу
+
+        Параметры
+        ----------
+        pk - первичный ключ объекта
+
+
+        """
         with sqlite3.connect(self.db_file) as con:
             cur = con.cursor()
             row = cur.execute(f'SELECT * FROM {self.table_name} WHERE pk={pk}').fetchone()
@@ -60,6 +106,17 @@ class SQLiteRepository(AbstractRepository[T]):
         return obj
 
     def get_all(self, where: dict[str, Any] | None = None) -> list[T]:
+        """
+        Получает все объекты таблицы базы данных. Есть возможность
+        получить по условию. Для этого необходимо передать
+        словарь, где ключ - название поля, значение - значение поля
+
+        Параметры
+        ----------
+        where - условие
+
+
+        """
         with sqlite3.connect(self.db_file) as con:
             cur = con.cursor()
             sql = f'SELECT * FROM {self.table_name}'
@@ -79,6 +136,14 @@ class SQLiteRepository(AbstractRepository[T]):
         return objs
 
     def update(self, obj: T) -> None:
+        """
+        Обновление объекта таблицы в базе данных
+
+        Параметры
+        ----------
+        obj - объект
+
+        """
         if obj.pk == 0:
             raise ValueError('attempt to update object with unknown primary key')
         if obj.pk < 0:
@@ -92,6 +157,15 @@ class SQLiteRepository(AbstractRepository[T]):
         con.close()
 
     def delete(self, pk: int) -> None:
+        """
+        Удаляет объект по ключу из таблицы базы данных
+
+        Параметры
+        ----------
+        pk - первичный ключ объекта для удаления
+
+
+        """
         if pk == 0:
             raise ValueError('attempt to delete object with unknown primary key')
         if pk < 0:
@@ -103,4 +177,13 @@ class SQLiteRepository(AbstractRepository[T]):
 
     @classmethod
     def repo_factory(cls: type, models: list[type], db_file: str) -> dict[type, type]:
+        """
+        Возвращает репозитории нескольких моделей
+
+        Параметры
+        ----------
+        models - модели для создания таблиц
+        db_file - путь к базе данных
+
+        """
         return {m: cls(db_file, m) for m in models}

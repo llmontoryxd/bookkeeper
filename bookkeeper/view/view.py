@@ -1,5 +1,8 @@
-import os
+"""
+Модуль интерфейса
+"""
 
+import os
 from PySide6 import QtWidgets, QtGui
 from bookkeeper.view.expense_tab import ExpenseTab
 from bookkeeper.view.category_tab import CategoryTab
@@ -7,6 +10,14 @@ from bookkeeper.view.budget_tab import BudgetTab
 
 
 class View(QtWidgets.QWidget):  # pylint: disable=too-few-public-methods
+    """
+    Описывает главное окно (собирает все вкладки вместе)
+
+    figures_path - путь к логотипам
+    expense_tab - вкладка с расходами
+    category_tab - вкладка с категориями
+    budget_tab - вкладка бюджета
+    """
     def __init__(self) -> None:
         super().__init__()
         self.figures_path = os.path.join(os.getcwd(), 'view', 'figures')

@@ -1,11 +1,19 @@
-from PySide6 import QtWidgets, QtGui, QtCore
+"""
+Модуль, описывающий вкладку бюджета
+"""
 from datetime import datetime
+from typing import Callable, Tuple
+from PySide6 import QtWidgets, QtGui, QtCore
 from bookkeeper.models.budget import Budget
 from bookkeeper.models.expense import ExpenseWithStringDate
-from typing import Callable, Tuple
 
 
 class BudgetTab(QtWidgets.QWidget):
+    """
+    Описывает вкладку бюджета.
+
+    budget_table - таблица бюджета с названием
+    """
     def __init__(self) -> None:
         super().__init__()
         layout = QtWidgets.QVBoxLayout()
@@ -16,9 +24,22 @@ class BudgetTab(QtWidgets.QWidget):
 
 
 class BudgetTable(QtWidgets.QWidget):
+    """
+    Описывает таблицу бюджета с названием
+
+    title - строка с названием
+    budget_table - таблица бюджета
+    expenses - расходы из базы данных
+    now - текущее время
+    update_menu - меню обновления
+    budget_updater - обертка функция обновления бюджета
+    """
     def __init__(self) -> None:
         super().__init__()
-        self.expenses = []  # type: list[ExpenseWithStringDate]
+        self.expenses = []          # type: list[ExpenseWithStringDate]
+        self.now = None             # type: datetime | None
+        self.update_menu = None     # type: UpdateMenu | None
+        self.budget_updater: Callable[[str, str, str, list[str]], None] | None = None
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
@@ -51,10 +72,27 @@ class BudgetTable(QtWidgets.QWidget):
         self.addAction(self.update_budget)
 
     def set_expenses(self, expenses: list[ExpenseWithStringDate]) -> None:
+        """
+        Записывает расходы из базы данных в массив
+
+        Параметры
+        ----------
+        expenses - расходы из базы данных
+
+        """
         self.expenses = expenses
 
     def set_data(self, budget_data: list[Budget]) -> None:
+        """
+        Записывает данные бюджета в таблицу для отображения
+
+        Параметры
+        ----------
+        budget_data - данные бюджета из базы данных
+
+        """
         self.now = datetime.now()
+        assert self.now is not None
         day_amount = 0.0
         week_amount = 0.0
         month_amount = 0.0
@@ -81,6 +119,11 @@ class BudgetTable(QtWidgets.QWidget):
                                           str(budget_data[i].budget)))
 
     def get_data_from_table(self) -> Tuple[Budget, Budget, Budget]:
+        """
+        Получает данные из таблицы для записи в базу данных
+
+
+        """
         day_budget_data = Budget(pk=1, budget=self.budget_table.item(0, 1).text(),
                                  amount=self.budget_table.item(0, 0).text())
         week_budget_data = Budget(pk=1, budget=self.budget_table.item(1, 1).text(),
@@ -91,10 +134,15 @@ class BudgetTable(QtWidgets.QWidget):
         return day_budget_data, week_budget_data, month_budget_data
 
     def _update_budget(self) -> None:
+        """
+        Отображает меню обновления бюджета
+
+        """
         amounts = [self.budget_table.item(0, 0).text(),
                    self.budget_table.item(1, 0).text(),
                    self.budget_table.item(2, 0).text()]
         self.update_menu = UpdateMenu(amounts)
+        assert self.update_menu is not None
         self.update_menu.day_budget.line.setText(self.budget_table.item(0, 1).text())
         self.update_menu.week_budget.line.setText(self.budget_table.item(1, 1).text())
         self.update_menu.month_budget.line.setText(self.budget_table.item(2, 1).text())
@@ -103,18 +151,57 @@ class BudgetTable(QtWidgets.QWidget):
 
     def _on_update_menu_submit(self, day_budget: str, week_budget: str,
                                month_budget: str, amounts: list[str]) -> None:
+        """
+        Обертка функция обновления бюджета
+
+        Параметры
+        ----------
+        day_budget - дневной бюджет
+        week_budget - недельный бюджет
+        month_budget - месячный бюджет
+        amounts - сумма расходов за соответствующий период
+
+
+        """
+        assert self.budget_updater is not None
         self.budget_updater(day_budget, week_budget, month_budget, amounts)
 
-    def register_budget_updater(self, handler:
-                                Callable[[str, str, str, list[str]], None]) -> None:
+    def register_budget_updater(self,
+                                handler: Callable[[str, str, str, list[str]], None]) \
+            -> None:
+        """
+        Инициализирует обертку функции обновления бюджета
+
+        Параметры
+        ----------
+        handler - функция обновления бюджета
+
+        """
         self.budget_updater = handler
+        assert self.budget_updater is not None
 
 
 class UpdateMenu(QtWidgets.QWidget):
+    """
+    Описывает меню обновления
+
+    submitClicked - сигнал нажатия кнопки "Обновить"
+    amounts - сумма расходов соответствующего периода
+    day_budget - виджет обновления дневного бюджета
+    week_budget - виджет обновления недельного бюджета
+    month_budget - виджет обновления месячного бюджета
+    submit_button - кнопка "Обновить"
+    day_text - дневной бюджет
+    week_text - недельный бюджет
+    month_text - месячный бюджет
+    """
     submitClicked = QtCore.Signal(str, str, str, object)
 
     def __init__(self, amounts: list[str]) -> None:
         super().__init__()
+        self.day_text = None    # type: str | None
+        self.week_text = None   # type: str | None
+        self.month_text = None  # type: str | None
         layout = QtWidgets.QVBoxLayout()
         self.amounts = amounts
         self.setLayout(layout)
@@ -131,15 +218,29 @@ class UpdateMenu(QtWidgets.QWidget):
         layout.addWidget(self.submit_button)
 
     def _submit(self) -> None:
+        """
+        Описывает поведение интерфейса при нажатии кнопки "Обновить"
+
+        """
         self.day_text = self.day_budget.line.text()
         self.week_text = self.week_budget.line.text()
         self.month_text = self.month_budget.line.text()
+        assert self.day_text is not None
+        assert self.week_text is not None
+        assert self.month_text is not None
         self.submitClicked.emit(self.day_text, self.week_text,
                                 self.month_text, self.amounts)
         self.close()
 
 
 class AddBudget(QtWidgets.QWidget):
+    """
+    Описывает виджет обновления бюджета определенного периода
+
+    period - название периода (День, Неделя, Месяц)
+    label - виджет названия периода
+    line - виджет записи бюджета
+    """
     def __init__(self, period: str) -> None:
         super().__init__()
         layout = QtWidgets.QHBoxLayout()

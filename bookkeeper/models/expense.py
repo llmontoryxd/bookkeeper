@@ -27,6 +27,12 @@ class Expense:
 
 @dataclass(slots=True)
 class ExpenseWithStringDate:
+    """
+    Расходная операция, аналогичная Expense, за исключением того,
+    что даты в этой операции содержатся в виде строковых переменных.
+
+    Необходима для прохождения mypy тестов.
+    """
     amount: int | str
     category: int | str
     expense_date: str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

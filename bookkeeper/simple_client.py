@@ -1,12 +1,11 @@
 """
 Простой тестовый скрипт для терминала
 """
-
+import os
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense import Expense
 from bookkeeper.repository.sqlite_repository import SQLiteRepository
 from bookkeeper.utils import read_tree
-import os
 
 # cat_repo = MemoryRepository[Category]()
 # exp_repo = MemoryRepository[Expense]()
