@@ -33,4 +33,3 @@ class ExpenseWithStringDate:
     added_date: str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     comment: str = ''
     pk: int = 0
-

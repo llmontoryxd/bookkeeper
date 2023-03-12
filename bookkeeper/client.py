@@ -1,11 +1,9 @@
 from bookkeeper.view.view import View
 from bookkeeper.repository.sqlite_repository import SQLiteRepository
-from bookkeeper.repository.abstract_repository import T, AbstractRepository
 from bookkeeper.models.expense import Expense, ExpenseWithStringDate
 from bookkeeper.models.category import Category
 from bookkeeper.models.budget import Budget
 from typing import Optional
-from datetime import datetime
 
 
 class Bookkeeper:
@@ -13,14 +11,16 @@ class Bookkeeper:
         self.view = View()
         self.view.resize(600, 900)
         self.db_path = db_path
-        self.cat_repo: SQLiteRepository[Category] = SQLiteRepository(self.db_path, Category)
+        self.cat_repo: SQLiteRepository[Category] = SQLiteRepository(self.db_path,
+                                                                     Category)
         self.cats = self.cat_repo.get_all()
         self.view.category_tab.cat_table.set_data(self.cats)
         self.view.category_tab.cat_table.register_cat_adder(self.add_cat)
         self.view.category_tab.cat_table.register_cat_deleter(self.delete_cat)
         self.view.category_tab.cat_table.register_cat_updater(self.update_cat)
 
-        self.exp_repo: SQLiteRepository[ExpenseWithStringDate] = SQLiteRepository(self.db_path, Expense)
+        self.exp_repo: SQLiteRepository[ExpenseWithStringDate] = \
+            SQLiteRepository(self.db_path, Expense)
         self.expenses = self.exp_repo.get_all()
         self.view.expense_tab.expense_table.set_categories(self.cats)
         self.view.expense_tab.expense_table.set_data(self.expenses)
@@ -28,7 +28,8 @@ class Bookkeeper:
         self.view.expense_tab.expense_table.register_expense_deleter(self.delete_exp)
         self.view.expense_tab.expense_table.register_expense_updater(self.update_expense)
 
-        self.budget_repo: SQLiteRepository[Budget] = SQLiteRepository(self.db_path, Budget)
+        self.budget_repo: SQLiteRepository[Budget] = SQLiteRepository(self.db_path,
+                                                                      Budget)
         self.budget_data = self.budget_repo.get_all()
         if len(self.budget_data) == 0:
             self.budget_repo.add(Budget(amount=0, budget=1000))
@@ -63,7 +64,8 @@ class Bookkeeper:
         self.update_budget(str(budgets[0].budget), str(budgets[1].budget),
                            str(budgets[2].budget), amounts)
 
-    def find_subs(self, category: Category, cat_subs_list: list[Category]) -> list[Category]:
+    def find_subs(self, category: Category,
+                  cat_subs_list: list[Category]) -> list[Category]:
         cat_subs_list.append(category)
         sub_cats = self.cat_repo.get_all({'parent': category.pk})
         for sub_cat in sub_cats:
@@ -81,8 +83,11 @@ class Bookkeeper:
 
         for expense in self.expenses:
             if expense.category == old_cat.name:
-                new_expense = ExpenseWithStringDate(pk=expense.pk, expense_date=expense.expense_date,
-                                    amount=expense.amount, category=new_name, comment=expense.comment)
+                new_expense = ExpenseWithStringDate(pk=expense.pk,
+                                                    expense_date=expense.expense_date,
+                                                    amount=expense.amount,
+                                                    category=new_name,
+                                                    comment=expense.comment)
                 self.exp_repo.update(new_expense)
                 expense.category = new_name
 
@@ -90,7 +95,8 @@ class Bookkeeper:
         self.view.expense_tab.expense_table.set_data(self.expenses)
 
     def add_exp(self, date: str, summ: str, cat: str, comment: str) -> None:
-        expense = ExpenseWithStringDate(amount=summ, category=cat, comment=comment, expense_date=date)
+        expense = ExpenseWithStringDate(amount=summ, category=cat,
+                                        comment=comment, expense_date=date)
         self.exp_repo.add(expense)
         self.expenses = self.exp_repo.get_all()
         self.view.expense_tab.expense_table.set_data(self.expenses)
@@ -112,9 +118,11 @@ class Bookkeeper:
         self.update_budget(str(budgets[0].budget), str(budgets[1].budget),
                            str(budgets[2].budget), amounts)
 
-    def update_expense(self, pk: int, new_date: str, new_summ: str, new_cat: str, new_com: str) -> None:
+    def update_expense(self, pk: int, new_date: str,
+                       new_summ: str, new_cat: str, new_com: str) -> None:
         new_expense = ExpenseWithStringDate(pk=pk, expense_date=new_date,
-                              amount=new_summ, category=new_cat, comment=new_com)
+                                            amount=new_summ, category=new_cat,
+                                            comment=new_com)
         self.exp_repo.update(new_expense)
         self.expenses = self.exp_repo.get_all()
         for expense in self.expenses:
@@ -131,7 +139,8 @@ class Bookkeeper:
         self.update_budget(str(budgets[0].budget), str(budgets[1].budget),
                            str(budgets[2].budget), amounts)
 
-    def update_budget(self, day_budget: str, week_budget: str, month_budget: str, amounts: list[str]) -> None:
+    def update_budget(self, day_budget: str, week_budget: str,
+                      month_budget: str, amounts: list[str]) -> None:
         day_budget_data = Budget(pk=1, budget=day_budget, amount=amounts[0])
         week_budget_data = Budget(pk=2, budget=week_budget, amount=amounts[1])
         month_budget_data = Budget(pk=3, budget=month_budget, amount=amounts[2])

@@ -32,7 +32,8 @@ class CategoryTable(QtWidgets.QWidget):
             0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         self.header.setSectionResizeMode(
             1, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        self.cat_table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.cat_table.setEditTriggers(QtWidgets.QAbstractItemView.
+                                       EditTrigger.NoEditTriggers)
         self.cat_table.verticalHeader().hide()
 
         layout.addWidget(self.title)
@@ -60,7 +61,9 @@ class CategoryTable(QtWidgets.QWidget):
             else:
                 for j in range(len(categories)):
                     if str(categories[i].parent) == str(categories[j].pk):
-                        self.cat_table.setItem(i, 1, QtWidgets.QTableWidgetItem(categories[j].name))
+                        self.cat_table.setItem(i, 1,
+                                               QtWidgets.QTableWidgetItem(
+                                                   categories[j].name))
 
     def _add_row(self) -> None:
         self.add_menu = AddMenu(self.categories)
@@ -78,13 +81,15 @@ class CategoryTable(QtWidgets.QWidget):
         assert self.categories is not None
         upd_obj_pk = self.categories[self.cat_table.currentRow()].pk
         self.update_menu = UpdateMenu(upd_obj_pk, self.categories)
-        self.update_menu.cat_widget.cat_line.setText(self.categories[self.cat_table.currentRow()].name)
+        self.update_menu.cat_widget.cat_line.setText(
+            self.categories[self.cat_table.currentRow()].name)
         self.placeholder_parent = ''
         for cat in self.categories:
             if self.categories[self.cat_table.currentRow()].parent == cat.pk:
                 self.placeholder_parent = cat.name
         for i in range(self.update_menu.par_widget.par_line.count()):
-            if self.placeholder_parent == self.update_menu.par_widget.par_line.itemText(i):
+            if self.placeholder_parent == self.update_menu.par_widget.\
+                    par_line.itemText(i):
                 self.update_menu.par_widget.par_line.setCurrentIndex(i)
         self.update_menu.submitClicked.connect(self._on_update_menu_submit)
         self.update_menu.show()
@@ -92,16 +97,20 @@ class CategoryTable(QtWidgets.QWidget):
     def _on_add_menu_submit(self, name: str, parent: Optional[int]) -> None:
         self.cat_adder(name, parent)
 
-    def _on_update_menu_submit(self, pk: int, new_name: str, new_parent: Optional[int]) -> None:
+    def _on_update_menu_submit(self, pk: int,
+                               new_name: str, new_parent: Optional[int]) -> None:
         self.cat_updater(pk, new_name, new_parent)
 
-    def register_cat_adder(self, handler: Callable[[str,Optional[int]], None]) -> None:
+    def register_cat_adder(self, handler:
+                           Callable[[str, Optional[int]], None]) -> None:
         self.cat_adder = handler
 
-    def register_cat_deleter(self, handler: Callable[[Category], None]) -> None:
+    def register_cat_deleter(self, handler:
+                             Callable[[Category], None]) -> None:
         self.cat_deleter = handler
 
-    def register_cat_updater(self, handler: Callable[[int, str, Optional[int]], None]) -> None:
+    def register_cat_updater(self, handler:
+                             Callable[[int, str, Optional[int]], None]) -> None:
         self.cat_updater = handler
 
 
@@ -202,7 +211,8 @@ class DeleteWarning(QtWidgets.QMessageBox):
         super().__init__()
         self.setWindowTitle('Удаление строки')
         self.setText('Вы действительно'
-            +' хотите удалить строку? Все данные (подкатегории и расходы) будут удалены.')
+                     + ' хотите удалить строку? '
+                       'Все данные (подкатегории и расходы) будут удалены.')
         self.yes_btn = self.addButton('Да', QtWidgets.QMessageBox.ButtonRole.YesRole)
         self.no_btn = self.addButton('Нет', QtWidgets.QMessageBox.ButtonRole.NoRole)
         self.setIcon(QtWidgets.QMessageBox.Icon.Question)

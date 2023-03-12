@@ -37,14 +37,16 @@ class BudgetTable(QtWidgets.QWidget):
             0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         self.header.setSectionResizeMode(
             1, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        self.budget_table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.budget_table.setEditTriggers(QtWidgets.QAbstractItemView.
+                                          EditTrigger.NoEditTriggers)
 
         layout.addWidget(self.title)
         layout.addWidget(self.budget_table)
 
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.ActionsContextMenu)
         self.update_budget = QtGui.QAction('Обновить бюджет', self)
-        self.update_budget.triggered.connect(self._update_budget)  # type: ignore[attr-defined]
+        self.update_budget.triggered.connect(  # type: ignore[attr-defined]
+            self._update_budget)
 
         self.addAction(self.update_budget)
 
@@ -66,21 +68,25 @@ class BudgetTable(QtWidgets.QWidget):
                         if expense_datetime.day == self.now.day:
                             day_amount += float(expense.amount)
 
-        self.budget_table.setItem(0, 0, QtWidgets.QTableWidgetItem(str(round(day_amount, 2))))
-        self.budget_table.setItem(1, 0, QtWidgets.QTableWidgetItem(str(round(week_amount, 2))))
-        self.budget_table.setItem(2, 0, QtWidgets.QTableWidgetItem(str(round(month_amount, 2))))
+        self.budget_table.setItem(0, 0, QtWidgets.QTableWidgetItem(
+            str(round(day_amount, 2))))
+        self.budget_table.setItem(1, 0, QtWidgets.QTableWidgetItem(
+            str(round(week_amount, 2))))
+        self.budget_table.setItem(2, 0, QtWidgets.QTableWidgetItem(
+            str(round(month_amount, 2))))
 
         for i in range(len(budget_data)):
             self.budget_table.setItem(i, 1,
-                                      QtWidgets.QTableWidgetItem(str(budget_data[i].budget)))
+                                      QtWidgets.QTableWidgetItem(
+                                          str(budget_data[i].budget)))
 
     def get_data_from_table(self) -> Tuple[Budget, Budget, Budget]:
         day_budget_data = Budget(pk=1, budget=self.budget_table.item(0, 1).text(),
                                  amount=self.budget_table.item(0, 0).text())
         week_budget_data = Budget(pk=1, budget=self.budget_table.item(1, 1).text(),
-                                 amount=self.budget_table.item(1, 0).text())
+                                  amount=self.budget_table.item(1, 0).text())
         month_budget_data = Budget(pk=1, budget=self.budget_table.item(2, 1).text(),
-                                 amount=self.budget_table.item(2, 0).text())
+                                   amount=self.budget_table.item(2, 0).text())
 
         return day_budget_data, week_budget_data, month_budget_data
 
@@ -95,10 +101,12 @@ class BudgetTable(QtWidgets.QWidget):
         self.update_menu.submitClicked.connect(self._on_update_menu_submit)
         self.update_menu.show()
 
-    def _on_update_menu_submit(self, day_budget: str, week_budget: str, month_budget: str, amounts: list[str]) -> None:
+    def _on_update_menu_submit(self, day_budget: str, week_budget: str,
+                               month_budget: str, amounts: list[str]) -> None:
         self.budget_updater(day_budget, week_budget, month_budget, amounts)
 
-    def register_budget_updater(self, handler: Callable[[str, str, str, list[str]], None]) -> None:
+    def register_budget_updater(self, handler:
+                                Callable[[str, str, str, list[str]], None]) -> None:
         self.budget_updater = handler
 
 
@@ -126,7 +134,8 @@ class UpdateMenu(QtWidgets.QWidget):
         self.day_text = self.day_budget.line.text()
         self.week_text = self.week_budget.line.text()
         self.month_text = self.month_budget.line.text()
-        self.submitClicked.emit(self.day_text, self.week_text, self.month_text, self.amounts)
+        self.submitClicked.emit(self.day_text, self.week_text,
+                                self.month_text, self.amounts)
         self.close()
 
 

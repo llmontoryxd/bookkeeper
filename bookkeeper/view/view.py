@@ -6,7 +6,7 @@ from bookkeeper.view.category_tab import CategoryTab
 from bookkeeper.view.budget_tab import BudgetTab
 
 
-class View(QtWidgets.QWidget): # pylint: disable=too-few-public-methods
+class View(QtWidgets.QWidget):  # pylint: disable=too-few-public-methods
     def __init__(self) -> None:
         super().__init__()
         self.figures_path = os.path.join(os.getcwd(), 'view', 'figures')
@@ -27,4 +27,3 @@ class View(QtWidgets.QWidget): # pylint: disable=too-few-public-methods
         self.tabs.addTab(self.budget_tab, 'Бюджет')
 
         layout.addWidget(self.tabs)
-

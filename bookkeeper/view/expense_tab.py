@@ -1,6 +1,6 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 from datetime import datetime
-from typing import Any, Optional, Callable
+from typing import Callable
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense import ExpenseWithStringDate
 import operator
@@ -41,8 +41,10 @@ class ExpenseTable(QtWidgets.QWidget):
         self.header.setSectionResizeMode(
             3, QtWidgets.QHeaderView.ResizeMode.Stretch)
         self.v_header = self.expenses_table.verticalHeader()
-        self.v_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        self.expenses_table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.v_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.
+                                           ResizeToContents)
+        self.expenses_table.setEditTriggers(QtWidgets.QAbstractItemView.
+                                            EditTrigger.NoEditTriggers)
         self.expenses_table.verticalHeader().hide()
 
         layout.addWidget(self.title)
@@ -64,22 +66,35 @@ class ExpenseTable(QtWidgets.QWidget):
         self.categories = categories
 
     def set_data(self, expenses: list[ExpenseWithStringDate]) -> None:
-        self.expenses = sorted(expenses, key=operator.attrgetter('expense_date'), reverse=True)
+        self.expenses = sorted(expenses, key=operator.attrgetter('expense_date'),
+                               reverse=True)
         self.expenses_table.setRowCount(len(self.expenses))
         for i in range(len(self.expenses)):
             date = self.expenses[i].expense_date
-            self.expenses_table.setItem(i, 0, QtWidgets.QTableWidgetItem(date))
-            self.expenses_table.setItem(i, 1, QtWidgets.QTableWidgetItem(self.expenses[i].amount))
-            self.expenses_table.setItem(i, 2, QtWidgets.QTableWidgetItem(self.expenses[i].category))
-            self.expenses_table.setItem(i, 3, QtWidgets.QTableWidgetItem(self.expenses[i].comment))
+            self.expenses_table.setItem(i, 0,
+                                        QtWidgets.QTableWidgetItem(date))
+            self.expenses_table.setItem(i, 1,
+                                        QtWidgets.QTableWidgetItem(
+                                            self.expenses[i].amount))
+            self.expenses_table.setItem(i, 2,
+                                        QtWidgets.QTableWidgetItem(
+                                            self.expenses[i].category))
+            self.expenses_table.setItem(i, 3,
+                                        QtWidgets.QTableWidgetItem(
+                                            self.expenses[i].comment))
 
     def _update_row(self) -> None:
         assert self.expenses is not None
         upd_obj_pk = self.expenses[self.expenses_table.currentRow()].pk
         self.update_menu = UpdateMenu(upd_obj_pk, self.categories)
-        self.update_menu.sum_widget.sum_line.setText(str(self.expenses[self.expenses_table.currentRow()].amount))
-        self.update_menu.com_widget.comment_line.setText(self.expenses[self.expenses_table.currentRow()].comment)
-        date = QtCore.QDateTime.fromString(self.expenses[self.expenses_table.currentRow()].expense_date,
+        self.update_menu.sum_widget.sum_line.setText(str(self.expenses[
+                                                         self.expenses_table.
+                                                         currentRow()].amount))
+        self.update_menu.com_widget.comment_line.setText(self.expenses[
+                                                         self.expenses_table.
+                                                         currentRow()].comment)
+        date = QtCore.QDateTime.fromString(self.expenses[
+                                           self.expenses_table.currentRow()].expense_date,
                                            'yyyy-MM-dd HH:mm:ss')
         self.update_menu.date_widget.date_box.setDateTime(date)
         placeholder_cat = self.expenses[self.expenses_table.currentRow()].category
@@ -104,16 +119,20 @@ class ExpenseTable(QtWidgets.QWidget):
     def _on_add_menu_submit(self, date: str, summ: str, cat: str, comment: str) -> None:
         self.expense_adder(date, summ, cat, comment)
 
-    def _on_update_menu_submit(self, pk: int, new_date: str, new_summ: str, new_cat: str, new_com: str) -> None:
+    def _on_update_menu_submit(self, pk: int, new_date: str,
+                               new_summ: str, new_cat: str, new_com: str) -> None:
         self.expense_updater(pk, new_date, new_summ, new_cat, new_com)
 
-    def register_expense_adder(self, handler: Callable[[str, str, str, str], None]) -> None:
+    def register_expense_adder(self, handler:
+                               Callable[[str, str, str, str], None]) -> None:
         self.expense_adder = handler
 
-    def register_expense_deleter(self, handler: Callable[[ExpenseWithStringDate], None]) -> None:
+    def register_expense_deleter(self, handler:
+                                 Callable[[ExpenseWithStringDate], None]) -> None:
         self.expense_deleter = handler
 
-    def register_expense_updater(self, handler: Callable[[int, str, str, str, str], None]) -> None:
+    def register_expense_updater(self, handler:
+                                 Callable[[int, str, str, str, str], None]) -> None:
         self.expense_updater = handler
 
 
@@ -165,8 +184,10 @@ class AddMenu(QtWidgets.QWidget):
         self.com_widget = AddComment()
         self.com_widget.comment_line.setPlaceholderText('Введите комментарий...')
         self.date_widget = AddDate()
-        self.date_widget.date_box.setDateTime(QtCore.QDateTime.fromString(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                           'yyyy-MM-dd HH:mm:ss'))
+        self.date_widget.date_box.setDateTime(QtCore.QDateTime.fromString(
+                                              datetime.now().strftime(
+                                                  '%Y-%m-%d %H:%M:%S'),
+                                              'yyyy-MM-dd HH:mm:ss'))
         self.submit_button = QtWidgets.QPushButton('Добавить')
         self.submit_button.clicked.connect(self._submit)  # type: ignore[attr-defined]
 
@@ -240,8 +261,7 @@ class DeleteWarning(QtWidgets.QMessageBox):
         super().__init__()
         self.setWindowTitle('Удаление расхода')
         self.setText('Вы действительно'
-            +' хотите удалить строку? Запись о расходе будет удалена.')
+                     + ' хотите удалить строку? Запись о расходе будет удалена.')
         self.yes_btn = self.addButton('Да', QtWidgets.QMessageBox.ButtonRole.YesRole)
         self.no_btn = self.addButton('Нет', QtWidgets.QMessageBox.ButtonRole.NoRole)
         self.setIcon(QtWidgets.QMessageBox.Icon.Question)
-
